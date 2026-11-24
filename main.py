@@ -25,10 +25,17 @@ def _validate(line: str) -> None:
 
 def main() -> None:
     _validate(LINE)
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, "entry.txt"), "w", encoding="utf-8", newline="") as f:
+    path = os.path.join(out_dir, "entry.txt")
+    with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(LINE)
+    # Verify the file round-trips exactly: what the judge reads must be
+    # byte for byte the line we validated, with no added newline.
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        written = f.read()
+    if written != LINE:
+        raise ValueError(f"entry.txt mismatch: wrote {len(LINE)} chars, read back {len(written)}")
     print(LINE)
 
 
